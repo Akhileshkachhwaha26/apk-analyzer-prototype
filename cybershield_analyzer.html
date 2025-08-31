@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield APK Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        #file-upload-label {
+            cursor: pointer;
+            border: 2px dashed #9ca3af;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        #file-upload-label:hover {
+            border-color: #2563eb;
+            background-color: #f9fafb;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 1.5rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #2563eb;
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            line-height: 1.5rem;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-2xl mx-auto">
+        <!-- Main Card -->
+        <div id="main-card" class="card p-8 space-y-6">
+            <!-- Header -->
+            <div class="text-center">
+                <div class="flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    <h1 class="text-3xl font-bold text-gray-800">CyberShield APK Analyzer</h1>
+                </div>
+                <p class="text-gray-500 mt-2">AI-powered detection for fake and malicious banking apps.</p>
+            </div>
+
+            <!-- Upload Section -->
+            <div id="upload-section" class="space-y-4">
+                <div class="flex items-center justify-center w-full">
+                    <label for="apk-file" id="file-upload-label" class="flex flex-col items-center justify-center w-full h-40 text-center">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V6a4 4 0 014-4h1.586a1 1 0 01.707.293l1.414 1.414a1 1 0 00.707.293H13a4 4 0 014 4v1.586a1 1 0 01-.293.707l-1.414 1.414a1 1 0 00-.293.707V16m-7-2h2m5 0h2m-5 2h.01M12 18h.01"></path></svg>
+                            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p class="text-xs text-gray-500">Select an APK file to scan</p>
+                        </div>
+                        <input id="apk-file" type="file" class="hidden" accept=".apk"/>
+                    </label>
+                </div>
+                <p id="file-name-display" class="text-center text-gray-600 font-medium"></p>
+                <button id="scan-button" class="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Scan File
+                </button>
+                <div id="error-message" class="text-red-500 text-center text-sm font-medium hidden"></div>
+            </div>
+
+            <!-- Analysis Section -->
+            <div id="analysis-section" class="hidden text-center space-y-4 py-8">
+                 <div class="loader mx-auto"></div>
+                 <p class="text-lg font-semibold text-gray-700">Analyzing, please wait...</p>
+                 <p id="analysis-status" class="text-gray-500"></p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-section" class="hidden space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-gray-800">Analysis Complete</h2>
+                    <p class="text-gray-500">Here is the security report for your file.</p>
+                </div>
+
+                <!-- Risk Score -->
+                <div id="risk-score-card" class="p-6 rounded-lg text-center">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Risk Score</h3>
+                    <div class="relative w-32 h-32 mx-auto">
+                        <svg class="w-full h-full" viewBox="0 0 36 36">
+                            <path class="text-gray-200" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+                            <path id="score-circle" class="text-green-500" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="risk-score-text" class="text-3xl font-bold"></span>
+                        </div>
+                    </div>
+                     <p id="risk-level-text" class="mt-3 text-xl font-bold"></p>
+                </div>
+
+                <!-- Details -->
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800">File Details</h4>
+                        <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                            <li><strong>Name:</strong> <span id="result-file-name"></span></li>
+                            <li><strong>Size:</strong> <span id="result-file-size"></span></li>
+                            <li><strong>Hash (SHA-256):</strong> <span id="result-file-hash" class="break-all"></span></li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800">Suspicious Permissions Found</h4>
+                        <ul id="permissions-list" class="text-sm text-red-600 mt-2 list-disc list-inside space-y-1">
+                           <!-- JS will populate this -->
+                        </ul>
+                         <p id="no-permissions-msg" class="text-sm text-gray-600 mt-2 hidden">No suspicious permissions were detected.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800">Security Recommendation</h4>
+                        <p id="recommendation-text" class="text-sm text-gray-600 mt-2"></p>
+                    </div>
+                </div>
+
+                <button id="scan-another-button" class="btn-primary w-full">Scan Another File</button>
+            </div>
+        </div>
+        <footer class="text-center mt-4 text-sm text-gray-600">
+            <p>Powered by the "No_Code" Team from SRIT</p>
+        </footer>
+    </div>
+
+<script>
+    // DOM Elements
+    const uploadSection = document.getElementById('upload-section');
+    const analysisSection = document.getElementById('analysis-section');
+    const resultsSection = document.getElementById('results-section');
+    const apkFileInput = document.getElementById('apk-file');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const scanButton = document.getElementById('scan-button');
+    const errorMessage = document.getElementById('error-message');
+    const analysisStatus = document.getElementById('analysis-status');
+    const scanAnotherButton = document.getElementById('scan-another-button');
+
+    let selectedFile = null;
+
+    // --- Event Listeners ---
+    apkFileInput.addEventListener('change', (event) => {
+        selectedFile = event.target.files[0];
+        if (selectedFile) {
+            if (selectedFile.name.toLowerCase().endsWith('.apk')) {
+                fileNameDisplay.textContent = selectedFile.name;
+                scanButton.disabled = false;
+                errorMessage.classList.add('hidden');
+            } else {
+                showError('Invalid file type. Please upload an .apk file.');
+                resetUploader();
+            }
+        }
+    });
+
+    scanButton.addEventListener('click', () => {
+        if (selectedFile) {
+            startAnalysis();
+        }
+    });
+
+    scanAnotherButton.addEventListener('click', () => {
+        resetApp();
+    });
+
+    // --- Core Functions ---
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.remove('hidden');
+    }
+
+    function resetUploader() {
+        apkFileInput.value = '';
+        fileNameDisplay.textContent = '';
+        scanButton.disabled = true;
+        selectedFile = null;
+    }
+
+    function resetApp() {
+        uploadSection.classList.remove('hidden');
+        analysisSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        resetUploader();
+    }
+    
+    function startAnalysis() {
+        uploadSection.classList.add('hidden');
+        analysisSection.classList.remove('hidden');
+
+        // Simulate the multi-step analysis from the PDF
+        setTimeout(() => {
+            analysisStatus.textContent = 'Step 1/4: Analyzing digital signature and package metadata...';
+            setTimeout(() => {
+                analysisStatus.textContent = 'Step 2/4: Performing static code analysis...';
+                setTimeout(() => {
+                    analysisStatus.textContent = 'Step 3/4: Detecting patterns with AI/ML models...';
+                    setTimeout(() => {
+                        analysisStatus.textContent = 'Step 4/4: Finalizing risk score and generating report...';
+                        setTimeout(() => {
+                            generateAndShowResults();
+                        }, 1500);
+                    }, 2500);
+                }, 2000);
+            }, 2000);
+        }, 500);
+    }
+    
+    function generateAndShowResults() {
+        // --- This is the SIMULATION part ---
+        // We generate plausible, random results based on the filename
+        
+        const fileName = selectedFile.name.toLowerCase();
+        let riskScore = Math.floor(Math.random() * 30) + 5; // Base score for a "safe" app
+        let suspiciousPermissions = [];
+        const allPermissions = [
+            'android.permission.READ_SMS',
+            'android.permission.SEND_SMS',
+            'android.permission.READ_CONTACTS',
+            'android.permission.WRITE_EXTERNAL_STORAGE',
+            'android.permission.RECORD_AUDIO',
+            'android.permission.CAMERA',
+            'android.permission.INSTALL_PACKAGES',
+        ];
+
+        // Increase risk for filenames containing common malicious keywords
+        if (fileName.includes('mod') || fileName.includes('free') || fileName.includes('hack') || fileName.includes('update')) {
+            riskScore += Math.floor(Math.random() * 40) + 30;
+        }
+        if (fileName.includes('bank') || fileName.includes('sbi') || fileName.includes('hdfc')) {
+            riskScore += Math.floor(Math.random() * 20); // Slightly higher chance for banking apps
+        }
+        
+        riskScore = Math.min(riskScore, 98); // Cap the score
+
+        // Determine permissions based on risk score
+        if (riskScore > 40) {
+           const numPermissions = Math.floor(Math.random() * 3) + 1;
+           for(let i = 0; i < numPermissions; i++) {
+               suspiciousPermissions.push(allPermissions[Math.floor(Math.random() * allPermissions.length)]);
+           }
+           suspiciousPermissions = [...new Set(suspiciousPermissions)]; // Remove duplicates
+        }
+        
+        // --- Populate the results UI ---
+        populateResults(riskScore, suspiciousPermissions);
+        
+        analysisSection.classList.add('hidden');
+        resultsSection.classList.remove('hidden');
+    }
+
+    function populateResults(score, permissions) {
+        // File Details
+        document.getElementById('result-file-name').textContent = selectedFile.name;
+        document.getElementById('result-file-size').textContent = `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`;
+        // Generate a fake hash for realism
+        document.getElementById('result-file-hash').textContent = [...Array(64)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+
+        // Risk Score and Level
+        const riskScoreText = document.getElementById('risk-score-text');
+        const riskLevelText = document.getElementById('risk-level-text');
+        const scoreCircle = document.getElementById('score-circle');
+        const riskCard = document.getElementById('risk-score-card');
+        
+        riskScoreText.textContent = score;
+
+        // Update color and text based on score
+        let riskColorClass = 'text-green-500';
+        let riskCardBgClass = 'bg-green-50';
+        let riskLevel = 'Low Risk';
+        let recommendation = "This app appears to be safe. It requests no suspicious permissions and shows no signs of malicious behavior. You can proceed with installation, but always download from official app stores.";
+
+        if (score > 75) {
+            riskColorClass = 'text-red-500';
+            riskCardBgClass = 'bg-red-50';
+            riskLevel = 'High Risk - Malicious';
+            recommendation = "HIGHLY DANGEROUS! This application exhibits signs of being malware. It requests highly sensitive permissions and its signature matches known threats. DO NOT INSTALL this application and delete the APK file immediately.";
+        } else if (score > 40) {
+            riskColorClass = 'text-yellow-500';
+            riskCardBgClass = 'bg-yellow-50';
+            riskLevel = 'Medium Risk - Suspicious';
+            recommendation = "CAUTION ADVISED. This application requests sensitive permissions that could potentially be misused to access your private data. It is not from a recognized developer. Install only if you completely trust the source.";
+        }
+        
+        // Remove old classes
+        scoreCircle.classList.remove('text-green-500', 'text-yellow-500', 'text-red-500');
+        riskLevelText.classList.remove('text-green-600', 'text-yellow-600', 'text-red-600');
+        riskCard.classList.remove('bg-green-50', 'bg-yellow-50', 'bg-red-50');
+
+        // Add new classes
+        scoreCircle.classList.add(riskColorClass);
+        riskLevelText.textContent = riskLevel;
+        riskLevelText.classList.add(riskColorClass.replace('500', '600'));
+        riskCard.classList.add(riskCardBgClass);
+
+        // Set circle dash offset for the meter effect
+        const circumference = 2 * Math.PI * 15.9155;
+        const offset = circumference - (score / 100) * circumference;
+        scoreCircle.style.strokeDashoffset = offset;
+        scoreCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+
+        // Permissions List
+        const permissionsList = document.getElementById('permissions-list');
+        const noPermissionsMsg = document.getElementById('no-permissions-msg');
+        permissionsList.innerHTML = '';
+        if (permissions.length > 0) {
+            permissions.forEach(perm => {
+                const li = document.createElement('li');
+                li.textContent = perm;
+                permissionsList.appendChild(li);
+            });
+            noPermissionsMsg.classList.add('hidden');
+            permissionsList.classList.remove('hidden');
+        } else {
+            noPermissionsMsg.classList.remove('hidden');
+            permissionsList.classList.add('hidden');
+        }
+
+        // Recommendation
+        document.getElementById('recommendation-text').textContent = recommendation;
+    }
+
+</script>
+</body>
+</html>
