@@ -40,4 +40,4 @@ All you need is a modern web browser (Google Chrome, Mozilla Firefox, Microsoft 
 
 ## 👥 Team
 
-Developed by the **"No_Code" Team from SRIT**.
+Developed by the **"No_Code"**.
